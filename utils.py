@@ -13,3 +13,9 @@ def one_hot(labels, num):
 
     return new_labels
 
+def testResult2labels(y_test):
+
+    # y_test: N*num
+    labels = np.argmax(y_test, axis=1)
+
+    return labels

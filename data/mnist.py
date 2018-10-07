@@ -38,8 +38,8 @@ def read_label_files(filename):
 
 
 def fetch_traingset():
-    image_file = 'data/train-images-idx3-ubyte'
-    label_file = 'data/train-labels-idx1-ubyte'
+    image_file = './data/train-images.idx3-ubyte'
+    label_file = './data/train-labels.idx1-ubyte'
     images = read_image_files(image_file, 60000)
     labels = read_label_files(label_file)
     return {'images': images,
@@ -47,8 +47,8 @@ def fetch_traingset():
 
 
 def fetch_testingset():
-    image_file = 'data/t10k-images-idx3-ubyte'
-    label_file = 'data/t10k-labels-idx1-ubyte'
+    image_file = './data/t10k-images.idx3-ubyte'
+    label_file = './data/t10k-labels.idx1-ubyte'
     images = read_image_files(image_file, 10000)
     labels = read_label_files(label_file)
     return {'images': images,

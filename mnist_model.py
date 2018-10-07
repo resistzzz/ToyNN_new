@@ -3,6 +3,7 @@
 """
 
 import random
+import pickle
 import numpy as np
 from activation import Softmax, ReLU, LeakyReLU
 from layer import FullyConnected
@@ -10,7 +11,7 @@ from loss import CrossEntropyLoss
 from optimizer import SGD
 import parameter
 import network
-from utils import one_hot
+from utils import one_hot, testResult2labels
 from data.mnist import fetch_testingset, fetch_traingset
 
 
@@ -34,19 +35,45 @@ def mnist_model():
 
     print(model)
     traingset = fetch_traingset()
-    images, labels = traingset['images'], traingset['labels']
+    train_images, train_labels = traingset['images'], traingset['labels']
     batch_size = 256
-    training_size = len(images)
+    training_size = len(train_images)
+    loss_list = np.zeros((50, int(training_size/batch_size)))
     for epoch in range(50):
         for i in range(int(training_size/batch_size)):
-            batch_images = np.array(images[i*batch_size:(i+1)*batch_size])
-            batch_labels = np.array(labels[i*batch_size:(i+1)*batch_size])
+            batch_images = np.array(train_images[i*batch_size:(i+1)*batch_size])
+            batch_labels = np.array(train_labels[i*batch_size:(i+1)*batch_size])
             batch_labels = one_hot(batch_labels, 10)
-
             _, loss = model.forward(batch_images, batch_labels)
-            print("e:{}, i:{} loss: {}".format(epoch, i, loss))
+            if i % 50 == 0:
+                loss_list[epoch][i] = loss
+                print("e:{}, i:{} loss: {}".format(epoch, i, loss))
             model.backward()
             model.optimize(optimizer)
+
+    filename = 'model.data'
+    f = open(filename, 'wb')
+    pickle.dump(model, f)
+    f.close()
+
+    loss_fname = 'loss.data'
+    f = open(loss_fname, 'wb')
+    pickle.dump(loss_list, f)
+    f.close()
+
+    testset = fetch_testingset()
+    test_images, test_labels = testset['images'], testset['labels']
+    test_images = np.array(test_images[:])
+    test_labels_one_hot = one_hot(test_labels, 10)
+
+    y_, test_loss = model.forward(test_images, test_labels_one_hot)
+    test_labels_pred = testResult2labels(y_)
+    test_labels = np.array(test_labels)
+    right_num = np.sum(test_labels==test_labels_pred)
+    accuracy = 1.0 * right_num/test_labels.shape[0]
+    print('test accuracy is: ', accuracy)
+
+    a = 0
 
 
 if __name__ == '__main__':
